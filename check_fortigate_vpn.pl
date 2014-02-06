@@ -52,6 +52,8 @@ my $oid_unitdesc = ".1.3.6.1.2.1.1.1.0";							# Location of Fortinet device des
 my $oid_ActiveSSL = ".1.3.6.1.4.1.12356.101.12.2.3.1.2.1"; 			# Location of Fortinet firewall SSL VPN Tunnel connection count
 my $oid_ActiveSSLTunnel = ".1.3.6.1.4.1.12356.101.12.2.3.1.6.1"; 	# Location of Fortinet firewall SSL VPN Tunnel connection count
 my $oid_ipsectuntableroot = ".1.3.6.1.4.1.12356.101.12.2.2.1";		# Table of IPSec VPN tunnels
+my $oid_vdomtunroot = ".1.3.6.1.4.1.12356.101.3.2.1.1.2";               # Table of vdom
+my $oid_vdomnameroot = ".1.3.6.1.4.1.12356.101.12.2.2.1.21";
 my $oidf_tunstatus = ".20";											# Location of a tunnel's connection status
 my $oidf_tunndx = ".1";												# Location of a tunnel's index...
 my $oidf_tunname = ".3";											# Location of a tunnel's name...
@@ -84,7 +86,9 @@ if ($type ne "ssl"){
 		#Bump the total tunnel count
 		$ipstuncount++;
 
-		
+		my $tunnelid = get_snmp_value($session, $oid_vdomnameroot . "." . $ipstuncount);
+                my $vdomname = get_snmp_value($session, $oid_vdomtunroot . "." . $tunnelid);
+                #print "VDOM info (" . $oid_vdomnameroot . ") " ."Tunnel ID:" . ">" . $tunnelid . "< vdom Name >" . $vdomname . "<\n";
 		#print "Tunnel name (" . $oid_ipsectuntableroot . $oidf_tunname . "." . $ipstuncount . ") is: " . get_snmp_value($session, $oid_ipsectuntableroot . $oidf_tunname . "." . $ipstuncount) . "\n";
 		#print "Tunnel status (" . $oid_ipsectuntableroot . $oidf_tunstatus . "." . $ipstuncount . ") is: " . get_snmp_value($session, $oid_ipsectuntableroot . $oidf_tunstatus . "." . $ipstuncount) . "\n";
 		
@@ -98,7 +102,7 @@ if ($type ne "ssl"){
 			# If we're counting failures and/or monitoring, put together an output error string of the tunnel name and its status
 			if ($modus >= 1){
 				$string_errors .= ", ";
-				$string_errors .= get_snmp_value($session, $oid_ipsectuntableroot . $oidf_tunname . "." . $ipstuncount)." ".$entitystate{get_snmp_value($session, $oid_ipsectuntableroot . $oidf_tunstatus . "." . $ipstuncount)};
+				$string_errors .= get_snmp_value($session, $oid_ipsectuntableroot . $oidf_tunname . "." . $ipstuncount)." ".$entitystate{get_snmp_value($session, $oid_ipsectuntableroot . $oidf_tunstatus . "." . $ipstuncount)} . " on vdom " . $vdomname;
 			}
 		}
 	}
